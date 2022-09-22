@@ -1,0 +1,4 @@
+version=4
+opts=pagemangle=s/(?i)">\s*download:?\s+qhull\s+(\d\S+)\s+for\s+unix/?version=$1">/g,\
+     downloadurlmangle=s/\?version=\d\S+$// \
+http://www.qhull.org/download/ .+\?version=(\d\S+)

@@ -1,0 +1,77 @@
+#!/usr/bin/make -f
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all reproducible=+all future=+lfs
+
+include /usr/share/dpkg/architecture.mk
+
+%:
+	dh $@ --buildsystem=cmake --with pkgkde_symbolshelper
+
+override_dh_auto_configure:
+	dh_auto_configure 						\
+		--buildsystem=cmake					\
+		--builddir=$(CURDIR)/obj-$(DEB_HOST_GNU_TYPE)		\
+		--                        				\
+		-DCMAKE_SKIP_RPATH=ON                                   \
+		-DINCLUDE_INSTALL_DIR=include                           \
+		-DLINK_APPS_SHARED=ON					\
+		-DLIB_INSTALL_DIR=lib/$(DEB_HOST_MULTIARCH)             \
+		-DBIN_INSTALL_DIR=bin                                   \
+		-DMAN_INSTALL_DIR=share/man/man1                        \
+		-DDOC_INSTALL_DIR=share/doc/libqhull-dev/qhull
+
+execute_after_dh_auto_build:
+	@echo "Building man pages"
+	cd debian &&							\
+	for info in 							\
+	    "qconvex:compute the convex hull:qconvex"			\
+	    "qdelaunay:compute the Delaunay triangulation:qdelaun"	\
+	    "qhalf:halfspace intersection about a point:qhalf"		\
+	    "qvoronoi:compute the Voronoi diagram:qvoronoi";		\
+	do								\
+	      comm=$$(echo  $$info | cut -d: -f1) &&			\
+	      purp=$$(echo  $$info | cut -d: -f2) &&			\
+	      doc=$$(echo   $$info | cut -d: -f3) &&			\
+	      COMM=$$(echo  $$comm | tr [:lower:] [:upper:]) &&		\
+	      echo -n Building man page for $$comm... &&		\
+	      sed -e "s/#command#/$$comm/g" -e "s/#purpose#/$$purp/g"	\
+	          -e "s/#COMMAND#/$$COMM/g" -e "s/#doc#/$$doc/g"	\
+	          manpage.in > $$comm.1 &&				\
+	      echo " done";						\
+	  done
+
+override_dh_auto_test:
+ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
+	env LD_LIBRARY_PATH=$(CURDIR)/obj-$(DEB_HOST_GNU_TYPE) \
+	    PATH=$(CURDIR)/obj-$(DEB_HOST_GNU_TYPE):$$PATH \
+	    eg/q_test
+endif
+
+override_dh_auto_install:
+	dh_auto_install --buildsystem=cmake
+
+execute_after_dh_auto_install:
+	@echo "No need for extra copy of license"
+	rm --verbose debian/tmp/usr/share/doc/libqhull-dev/qhull/COPYING.txt
+	@echo "No need for doc/ copies of man pages in ../../man/man1/ or for other formats."
+	@for f in qhull rbox; do \
+	  for ext in man txt; do \
+	    rm --verbose debian/tmp/usr/share/doc/libqhull-dev/qhull/html/$$f.$$ext || true; \
+	  done \
+	done
+	rm --verbose debian/tmp/usr/share/doc/libqhull-dev/qhull/src/Changes.txt
+
+override_dh_installchangelogs:
+	dh_installchangelogs src/Changes.txt
+
+execute_before_dh_link-indep:
+	mkdir -p debian/libqhull-doc/usr/share/doc/libqhull-dev/qhull/src/libqhull_r
+	@for f in $$(cd debian/tmp && echo usr/include/libqhull_r/*.h); do \
+	  ln --verbose -s /$$f debian/libqhull-doc/usr/share/doc/libqhull-dev/qhull/src/libqhull_r/; \
+	done
+
+override_dh_compress:
+	dh_compress -X.c -X.h -X.txt

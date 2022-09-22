@@ -1,0 +1,35 @@
+.ig
+Template manual page for the Qhull commands
+(C) 2020 Timo Röhling <timo@gaussglocke.de>
+
+This is a manual transcription of the
+Template manual page for the Qhull commands, DocBook source file
+(C) 2006  Rafael Laboissiere <rafael@debian.org>
+..
+.de URL
+\\$2 \(laURL: \\$1 \(ra\\$3
+..
+.if \n[.g] .mso www.tmac
+.if n .ad l
+.nh
+.TH #COMMAND# 1 "" "" "Qhull Utilities"
+.SH NAME
+#command# \- #purpose#
+.SH SYNOPSIS
+.B #command#
+.RI [ <options> ]
+.SH DESCRIPTION
+This manual page was written for the Debian distribution because the
+original program does not have a manual page.
+.PP
+This program is documented fully in
+.URL file:///usr/share/doc/libqhull-dev/qhull/html/#doc#.htm "HTML format" ,
+available in the libqhull-doc package.
+.SH SEE ALSO
+.B /usr/share/doc/libqhull-dev/qhull/html/#doc#.htm
+.SH AUTHOR
+The Qhull library is authored by C. Bradford Barber and Hannu Huhdanpaa.
+.PP
+This manual page was originally written by Rafael Laboissiere and later
+ported from DocBook to GROFF by Timo R\[u00F6]hling for the Debian System (but
+may be used by others without any restrictions).
